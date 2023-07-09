@@ -1,38 +1,23 @@
-import torch
-from torchvision import transforms
-
-from PIL import Image
+import torch, torchvision
 
 import os
 
 class ImageDataset:
-    def __init__(self, img_paths, labels, transformation = None):
-        self.img_paths = img_paths
-        self.labels = labels
-        self.transformation = transformation
+    def __init__(self, root_directory, transform = None):
+        self.root_directory = root_directory
+        self.dataset = torchvision.datasets.ImageFolder(root = root_directory, 
+                                                      transform = transform)
+        
 
     def __len__(self):
-        return len(self.labels)
+        return len(self.dataset)
 
     def __getitem__(self, idx):
-        image = Image.open(self.img_paths[idx])
-        image = transforms.ToTensor(image)
-
-        label = self.labels[idx]
-
-        if self.transformation:
-            image = self.transformation(image)
-
+        sample = self.dataset[idx]
+        image, label = sample[0], sample[1]
+        
         sample = {'image': image,
-                  'label': label}
+                  'label': torch.tensor(label)}
         
         return sample
 
-
-
-def lowercase_directories(path):
-    #renames subdirectories in path to all lowercase
-    for file in os.listdir(path):
-        os.rename(path + file, path + file.lower())
-
-    print("subdirectories have been converted to lowercase")
